@@ -1,26 +1,58 @@
-import datetime
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data import 
-
 def getData(csv):
-  df = pd.read_csv(csv)
+    df = pd.read_csv(csv)
+    return df
 
 def findSpreads(df):
-  #iterate through each row and find Open
-  #implement stack to record opens
-  #if closed found, pop stack and record in results
-  #calculate amount won loss for each result
-  #combine trades into single result if description matches exactly and on same day
-  #return results
-  pass
+
+    #Filter df for closes only
+    closes_df = df[df['Trans Code'].isin(['STC','BTC'])]
+
+    #Filter df for opens only
+    opens_df = df[df['Trans Code'].isin(['STO','BTO'])]
+    
+    #Match and merge based on 'Description', which contains Ticker, Date, and Strike Price
+    merged_df = pd.merge(closes_df,opens_df,on='Description',suffixes=('_closes','_opens'))
+
+    #Convert prices and amounts to numeric and make errors become 'NaN'
+    merged_df['Price_closes'] = pd.to_numeric(merged_df['Price_closes'], errors='coerce')
+    merged_df['Price_opens'] = pd.to_numeric(merged_df['Price_opens'], errors='coerce')    
+
+    merged_df['Amount_closes'] = pd.to_numeric(merged_df['Amount_closes'], errors='coerce')
+    merged_df['Amount_opens'] = pd.to_numeric(merged_df['Amount_opens'], errors='coerce')  
+
+    #Calculate price and amount differences and add column
+
+    merged_df['Price Difference'] = merged_df['Price_closes'] - merged_df['Price_opens']
+    merged_df['Amount Difference'] = merged_df['Amount_closes'] - merged_df['Amount_opens']
+
+    #Create Out DF with wanted columns
+    out_columns = ['Date_closes', 'Description', 'Quantity_closes', 'Price_opens', 'Price_closes', 'Price Difference', 'Amount Difference']
+
+    #Add Win/Loss column based on pos/neg price diff
+    # if merged_df['Price Difference'] > 0:
+    #     merged_df['Win/Loss'] = 'W'
+    # else:
+    #     merged_df['Win/Loss'] = 'L'
+        
+    return merged_df
 
 def main():
-  getData(csv)
-  sortData(ascending)
-  findSpreads
-  printTable
-  displayGraphs
+
+    #Parse CSV file from specific path into pandas dataframe
+    csv_file_path = 'data/robinhood_data.csv'
+    df = getData(csv_file_path)
+
+    #Finds and compiles all spreads and Win/Loss
+    df_out = findSpreads(df)
+
+    #display graphics - table and graphs
+    print(df_out)
+    
+    # printTable
+    # displayGraphs
   
+main()
