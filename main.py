@@ -31,14 +31,15 @@ def findSpreads(df):
 
     #Create Out DF with wanted columns
     out_columns = ['Date_closes', 'Description', 'Quantity_closes', 'Price_opens', 'Price_closes', 'Price Difference', 'Amount Difference']
-
+    out_df = merged_df[out_columns]
+  
     #Add Win/Loss column based on pos/neg price diff
-    # if merged_df['Price Difference'] > 0:
-    #     merged_df['Win/Loss'] = 'W'
-    # else:
-    #     merged_df['Win/Loss'] = 'L'
+    if out_df['Amount Difference'] > 0:
+      out_df['Win/Loss'] = 'W'
+    else:
+      out_df['Win/Loss'] = 'L'
         
-    return merged_df
+    return out_df
 
 def main():
 
