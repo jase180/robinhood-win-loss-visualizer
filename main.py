@@ -17,12 +17,13 @@ def findSpreads(df):
     #Match and merge based on 'Description', which contains Ticker, Date, and Strike Price
     merged_df = pd.merge(closes_df,opens_df,on='Description',suffixes=('_closes','_opens'))
 
-    #Convert prices and amounts to numeric and make errors become 'NaN'
-    merged_df['Price_closes'] = pd.to_numeric(merged_df['Price_closes'], errors='coerce')
-    merged_df['Price_opens'] = pd.to_numeric(merged_df['Price_opens'], errors='coerce')    
+    #Convert prices and amounts to numeric (also removing $ and , sign) and make errors become 'NaN'
 
-    merged_df['Amount_closes'] = pd.to_numeric(merged_df['Amount_closes'], errors='coerce')
-    merged_df['Amount_opens'] = pd.to_numeric(merged_df['Amount_opens'], errors='coerce')  
+    merged_df['Price_closes'] = pd.to_numeric(merged_df['Price_closes'].str.replace('$', '').str.replace(',',''), errors='coerce')
+    merged_df['Price_opens'] = pd.to_numeric(merged_df['Price_opens'].str.replace('$', '').str.replace(',',''), errors='coerce')
+
+    merged_df['Amount_closes'] = pd.to_numeric(merged_df['Amount_closes'].str.replace('$', '').str.replace(',',''), errors='coerce')
+    merged_df['Amount_opens'] = pd.to_numeric(merged_df['Amount_opens'].str.replace('$', '').str.replace(',',''), errors='coerce')
 
     #Calculate price and amount differences and add column
 
@@ -30,14 +31,14 @@ def findSpreads(df):
     merged_df['Amount Difference'] = merged_df['Amount_closes'] - merged_df['Amount_opens']
 
     #Create Out DF with wanted columns
-    out_columns = ['Date_closes', 'Description', 'Quantity_closes', 'Price_opens', 'Price_closes', 'Price Difference', 'Amount Difference']
+    out_columns = ['Settle Date_opens', 'Settle Date_closes', 'Description', 'Quantity_closes', 'Trans Code_closes', 'Price_opens', 'Price_closes', 'Price Difference', 'Amount_opens', 'Amount_closes', 'Amount Difference']
     out_df = merged_df[out_columns]
   
-    #Add Win/Loss column based on pos/neg price diff
-    if out_df['Amount Difference'] > 0:
-      out_df['Win/Loss'] = 'W'
-    else:
-      out_df['Win/Loss'] = 'L'
+    # #Add Win/Loss column based on pos/neg price diff
+    # if out_df['Amount Difference'] > 0:
+    #   out_df['Win/Loss'] = 'W'
+    # else:
+    #   out_df['Win/Loss'] = 'L'
         
     return out_df
 
