@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Data</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px; 
+        }
+        th, td {
+            padding: 10px; 
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4">Robinhood Credit Spreads data</h1>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Activity Date</th>
+                        <th>Process Date</th>
+                        <th>Settle Date</th>
+                        <th>Strike Date</th>
+                        <th>Instrument</th>
+                        <th>BTO Description</th>
+                        <th>BTO Quantity</th>
+                        <th>BTO Avg. Price</th>
+                        <th>BTO Amount</th>
+                        <th>New Description</th>
+                        <th>BTO Price</th>
+                        <th>STO Description</th>
+                        <th>STO Quantity</th>
+                        <th>STO Avg. Price</th>
+                        <th>STO Amount</th>
+                        <th>STO Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                        <tr>
+                            {% for cell in row %}
+                                <td>{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
