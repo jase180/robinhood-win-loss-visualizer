@@ -1,5 +1,6 @@
 import sqlite3
 import csv
+from datetime import datetime
 
 def create_table(cursor):
     print("Executing create table statement...")  
@@ -17,15 +18,22 @@ def create_table(cursor):
     )
 ''')
 
-def import_data_from_csv(cursor, filepath):
-    print("Opening CSV file...")  
+def format_date(date_str):
+    return datetime.strptime(date_str, '%m/%d/%Y').strftime('%Y-%m-%d')
+
+def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQLite
     with open(filepath, 'r') as file:
         reader = csv.reader(file)
-        next(reader)  # Skip header row
+        header = next(reader)  # Skip header row
+        print("CSV header:", header)
 
-        print("Inserting data from CSV into the database...")  
         for row in reader:
+            row[0] = format_date(row[0])  # Format Activity Date
+            row[1] = format_date(row[1])  # Format Process Date
+            row[2] = format_date(row[2])  # Format Settle Date
+
             cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
+
 
 def query_data(cursor):
     print("Dropping TempTable if exists...")  
@@ -35,9 +43,9 @@ def query_data(cursor):
     cursor.execute('''
         CREATE TEMP TABLE TempTable AS
         SELECT 
-            "Activity Date",
-            "Process Date",
-            "Settle Date",
+            DATE("Activity Date") AS "Activity Date",
+            DATE("Process Date") AS "Process Date",
+            DATE("Settle Date") AS "Settle Date",
             Instrument,
             Description,
             "Trans Code",
@@ -63,6 +71,9 @@ def query_data(cursor):
             Description,
             "Trans Code"
     ''')
+
+    rows = cursor.fetchall()
+    print("TempTable rows after creation:", rows)
 
     print("Querying data from TempTable...")  
     cursor.execute('''
@@ -90,9 +101,9 @@ def query_data(cursor):
                           AND STO."Activity Date" = BTO."Activity Date"
         WHERE 
             BTO."Trans Code" = 'BTO' AND STO."Trans Code" = 'STO'
-        ORDER BY DATE (BTO."Activity Date") DESC
+        ORDER BY DATE(BTO."Activity Date") DESC
     ''')
 
     rows = cursor.fetchall()
-    print(rows)
+    print("Final query rows:", rows)
     return rows
