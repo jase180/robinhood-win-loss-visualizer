@@ -49,9 +49,9 @@ def query_data(cursor):
             Instrument,
             Description,
             "Trans Code",
-            CAST(SUM(CAST(Quantity AS FLOAT)) AS TEXT) AS Quantity,
-            CAST(AVG(CAST(Price AS FLOAT)) AS TEXT) AS AvgPrice,
-            CAST(SUM(CAST(Amount AS FLOAT)) AS TEXT) AS Amount,
+            Quantity,
+            Price,
+            Amount, 
             SUBSTR(Description, 0, INSTR(Description, ' Put')) AS NewDescription,
             SUBSTR(Description, INSTR(Description, ' ') + 1, INSTR(Description, 'Put') - INSTR(Description, ' ') - 1) AS StrikeDate,
             CAST(SUBSTR(Description, INSTR(Description, '$') + 1) AS FLOAT) AS StrikePrice
@@ -71,12 +71,13 @@ def query_data(cursor):
             Description,
             "Trans Code"
     ''')
-
+    cursor.execute('SELECT * FROM TempTable')
     rows = cursor.fetchall()
     print("TempTable rows after creation:", rows)
 
-    print("Querying data from TempTable...")  
+    print("CREATE PUTS MATCHED TABLE")  
     cursor.execute('''
+        --CREATE TABLE MatchedTable AS
         SELECT 
             BTO."Activity Date",
             BTO."Process Date",
@@ -85,13 +86,13 @@ def query_data(cursor):
             BTO.Instrument,
             BTO.Description AS 'BTO Description',
             BTO.Quantity AS 'BTO Quantity',
-            BTO.AvgPrice AS 'BTO Avg. Price',
+            BTO.Price AS 'BTO Avg. Price',
             BTO.Amount AS 'BTO Amount',
             BTO.NewDescription,
             BTO.StrikePrice AS 'BTO Price',
             STO.Description AS 'STO Description',
             STO.Quantity AS 'STO Quantity',
-            STO.AvgPrice AS 'STO Avg. Price',
+            STO.Price AS 'STO Avg. Price',
             STO.Amount AS 'STO Amount',
             STO.StrikePrice AS 'STO Price'
         FROM 
@@ -105,5 +106,4 @@ def query_data(cursor):
     ''')
 
     rows = cursor.fetchall()
-    print("Final query rows:", rows)
     return rows

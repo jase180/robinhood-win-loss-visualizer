@@ -3,12 +3,12 @@ DROP TABLE IF EXISTS #temptable;
 
 -- Select necessary columns and perform calculations
 SELECT 
-    [Activity Date],
-    [Process Date],
-    [Settle Date],
+    Activity_Date,
+    [Process_Date],
+    [Settle_Date],
     Instrument,
     Description,
-    [Trans Code],
+    [Trans_Code],
     -- Calculate the total quantity, average price, and total amount
     SUM(CAST(Quantity AS FLOAT)) AS Quantity,
     AVG(CAST(Price AS FLOAT)) AS AvgPrice,
@@ -22,27 +22,27 @@ SELECT
     CAST(RIGHT(Description, LEN(Description) - PATINDEX('%$%', Description)) AS FLOAT) AS StrikePrice
 -- Store the result in a temporary table
 INTO #TempTable
-FROM dbo.testdata 
-WHERE [Trans Code] IN ('STC', 'BTC', 'BTO', 'STO')
+FROM dbo.[newest robinhood data] 
+WHERE [Trans_Code] IN ('STC', 'BTC', 'BTO', 'STO')
     AND Description LIKE '%Put%'
 GROUP BY
     -- Group by these columns
     SUBSTRING(Description, 0, PATINDEX('% Put%', Description)),
     SUBSTRING(Description, PATINDEX('% %', Description) + 1, PATINDEX('%Put%', Description) - PATINDEX('% %', Description) - 1),
     CAST(RIGHT(Description, LEN(Description) - PATINDEX('%$%', Description)) AS FLOAT),
-    [Activity Date],
-    [Process Date],
-    [Settle Date],
+    [Activity_Date],
+    [Process_Date],
+    [Settle_Date],
     Instrument,
     Description,
-    [Trans Code];
+    [Trans_Code];
 
 -- Select data from the temporary table and perform joins
 SELECT 
     -- Selecting columns from the BTO (Buy to Open) table
-    BTO.[Activity Date],
-    BTO.[Process Date],
-    BTO.[Settle Date],
+    BTO.[Activity_Date],
+    BTO.[Process_Date],
+    BTO.[Settle_Date],
     BTO.StrikeDate AS 'Strike Date',
     BTO.Instrument,
     BTO.Description AS 'BTO Description',
@@ -64,14 +64,14 @@ FROM
 -- Perform left join with the STO table
 LEFT JOIN 
     #TempTable STO ON STO.NewDescription = BTO.NewDescription
-                   AND STO.[Activity Date] = BTO.[Activity Date]
+                   AND STO.[Activity_Date] = BTO.[Activity_Date]
 -- Left join with the subquery to get BTC and STC data
 LEFT JOIN 
     -- Subquery to fetch BTC and STC data
     (SELECT 
-         BTC.[Activity Date],
-         BTC.[Process Date],
-         BTC.[Settle Date],
+         BTC.[Activity_Date],
+         BTC.[Process_Date],
+         BTC.[Settle_Date],
          BTC.StrikeDate AS 'Strike Date',
          BTC.Instrument,
          BTC.Description AS 'BTC Description',
@@ -89,9 +89,9 @@ LEFT JOIN
          #TempTable BTC
      LEFT JOIN 
          #TempTable STC ON STC.NewDescription = BTC.NewDescription
-                       AND STC.[Activity Date] = BTC.[Activity Date]
+                       AND STC.[Activity_Date] = BTC.[Activity_Date]
      WHERE 
-         BTC.[Trans Code] = 'BTC' AND STC.[Trans Code] = 'STC')  C ON C.NewDescription = BTO.NewDescription
+         BTC.[Trans_Code] = 'BTC' AND STC.[Trans_Code] = 'STC')  C ON C.NewDescription = BTO.NewDescription
 -- Filter only BTO and STO transactions
 WHERE 
-    BTO.[Trans Code] = 'BTO' AND STO.[Trans Code] = 'STO';
+    BTO.[Trans_Code] = 'BTO' AND STO.[Trans_Code] = 'STO';
