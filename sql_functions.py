@@ -77,24 +77,25 @@ def query_data(cursor):
 
     print("CREATE PUTS MATCHED TABLE")  
     cursor.execute('''
-        --CREATE TABLE MatchedTable AS
+        CREATE TABLE MatchedTable AS
         SELECT 
             BTO."Activity Date",
             BTO."Process Date",
             BTO."Settle Date",
-            BTO.StrikeDate AS 'Strike Date',
+            BTO.StrikeDate AS "Strike Date",
             BTO.Instrument,
-            BTO.Description AS 'BTO Description',
-            BTO.Quantity AS 'BTO Quantity',
-            BTO.Price AS 'BTO Avg. Price',
-            BTO.Amount AS 'BTO Amount',
+            BTO.Description AS "BTO Description",
+            BTO.Quantity AS "BTO Quantity",
+            BTO.Price AS "BTO Avg. Price",
+            BTO.Amount AS "BTO Amount",
             BTO.NewDescription,
-            BTO.StrikePrice AS 'BTO Price',
-            STO.Description AS 'STO Description',
-            STO.Quantity AS 'STO Quantity',
-            STO.Price AS 'STO Avg. Price',
-            STO.Amount AS 'STO Amount',
-            STO.StrikePrice AS 'STO Price'
+            BTO.StrikePrice AS "BTO Price",
+            STO.Description AS "STO Description",
+            STO.Quantity AS "STO Quantity",
+            STO.Price AS "STO Avg. Price",
+            STO.Amount AS "STO Amount",
+            STO.StrikePrice AS "STO Price"
+
         FROM 
             TempTable BTO
         LEFT JOIN 
@@ -104,6 +105,24 @@ def query_data(cursor):
             BTO."Trans Code" = 'BTO' AND STO."Trans Code" = 'STO'
         ORDER BY DATE(BTO."Activity Date") DESC
     ''')
-
+    cursor.execute('SELECT * FROM MatchedTable')
     rows = cursor.fetchall()
+    print("MatchedTable rows after creation:", rows)
+
+    print("SELECTING FINAL")
+    cursor.execute('''
+        SELECT
+            "Activity Date",
+            Instrument,
+            "Strike Date",
+            "BTO Description" AS "Buy Description",
+            "STO Description" AS "Sell Description",
+            "BTO Quantity" AS "Quantity",
+            ROUND(CAST(REPLACE(REPLACE("BTO Amount", '$', ''), ',', '') AS FLOAT) +
+                CAST(REPLACE(REPLACE("STO Amount", '$', ''), ',', '') AS FLOAT), 2) AS "Credit Received"
+        FROM 
+            MatchedTable
+    ''')
+    rows = cursor.fetchall()
+    print("Final Select:", rows)
     return rows
