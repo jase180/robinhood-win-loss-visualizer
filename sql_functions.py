@@ -21,6 +21,13 @@ def create_table(cursor):
 def format_date(date_str):
     return datetime.strptime(date_str, '%m/%d/%Y').strftime('%Y-%m-%d')
 
+def format_amount(amount):
+    ls = []
+    for character in amount:
+        if character.isdigit() or character == '.' or character == '-':
+            ls.append(character)
+    return ''.join(ls)
+
 def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQLite
     with open(filepath, 'r') as file:
         reader = csv.reader(file)
@@ -31,6 +38,7 @@ def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQ
             row[0] = format_date(row[0])  # Format Activity Date
             row[1] = format_date(row[1])  # Format Process Date
             row[2] = format_date(row[2])  # Format Settle Date
+            row[8] = format_amount(row[8])  # Format Amount to take away comma and $ signs
 
             cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
 
@@ -75,9 +83,9 @@ def query_data(cursor):
     rows = cursor.fetchall()
     print("TempTable rows after creation:", rows)
 
-    print("CREATE PUTS MATCHED TABLE")  
+    print("CREATE PUTS MATCHED TABLE OPENS")  
     cursor.execute('''
-        CREATE TABLE MatchedTable AS
+        CREATE TABLE MatchedTableOpens AS
         SELECT 
             BTO."Activity Date",
             BTO."Process Date",
@@ -105,24 +113,103 @@ def query_data(cursor):
             BTO."Trans Code" = 'BTO' AND STO."Trans Code" = 'STO'
         ORDER BY DATE(BTO."Activity Date") DESC
     ''')
-    cursor.execute('SELECT * FROM MatchedTable')
+    cursor.execute('SELECT * FROM MatchedTableOpens')
     rows = cursor.fetchall()
-    print("MatchedTable rows after creation:", rows)
+    print("MatchedTableOpens rows after creation:", rows)
 
-    print("SELECTING FINAL")
+    # Create MatchedTableCloses to identify matched BTC and STC transactions
+    print("CREATE PUTS MATCHED TABLE CLOSES")  
     cursor.execute('''
-        SELECT
-            "Activity Date",
-            Instrument,
-            "Strike Date",
-            "BTO Description" AS "Buy Description",
-            "STO Description" AS "Sell Description",
-            "BTO Quantity" AS "Quantity",
-            ROUND(CAST(REPLACE(REPLACE("BTO Amount", '$', ''), ',', '') AS FLOAT) +
-                CAST(REPLACE(REPLACE("STO Amount", '$', ''), ',', '') AS FLOAT), 2) AS "Credit Received"
+        CREATE TABLE MatchedTableCloses AS
+        SELECT 
+            BTC."Activity Date",
+            BTC."Process Date",
+            BTC."Settle Date",
+            BTC.StrikeDate AS "Strike Date",
+            BTC.Instrument,
+            BTC.Description AS "BTC Description",
+            BTC.Quantity AS "BTC Quantity",
+            BTC.Price AS "BTC Avg. Price",
+            BTC.Amount AS "BTC Amount",
+            BTC.NewDescription,
+            BTC.StrikePrice AS "BTC Price",
+            STC.Description AS "STC Description",
+            STC.Quantity AS "STC Quantity",
+            STC.Price AS "STC Avg. Price",
+            STC.Amount AS "STC Amount",
+            STC.StrikePrice AS "STC Price"
         FROM 
-            MatchedTable
+            TempTable BTC
+        LEFT JOIN 
+            TempTable STC ON STC.NewDescription = BTC.NewDescription
+                          AND STC."Activity Date" = BTC."Activity Date"
+        WHERE 
+            BTC."Trans Code" = 'BTC' AND STC."Trans Code" = 'STC'
+        ORDER BY DATE(BTC."Activity Date") DESC
     ''')
+    cursor.execute('SELECT * FROM MatchedTableCloses')
     rows = cursor.fetchall()
-    print("Final Select:", rows)
+    print("MatchedTableCloses rows after creation:", rows)
+
+    # Create CombinedTable to match MatchedTableOpens and MatchedTableCloses based on Description
+    print("CREATE COMBINED TABLE")  
+    cursor.execute('''
+        CREATE TABLE CombinedTable AS
+        SELECT
+            Opens."Activity Date" AS "Open Activity Date",
+            Opens.Instrument AS "Open Instrument",
+            Opens."BTO Quantity" AS "Open Buy Quantity",
+            Opens."BTO Avg. Price" AS "Open Buy Avg. Price",
+            Opens."BTO Amount" AS "Open Buy Amount",
+            Opens.NewDescription AS "Open New Description",
+            Opens."BTO Price" AS "Open Buy Price",
+            Opens."STO Quantity" AS "Open Sell Quantity",
+            Opens."STO Avg. Price" AS "Open Sell Avg. Price",
+            Opens."STO Amount" AS "Open Sell Amount",
+            Opens."STO Price" AS "Open Sell Price",
+            Closes."Activity Date" AS "Close Activity Date",
+            Closes."BTC Quantity" AS "Close Buy Quantity",
+            Closes."BTC Avg. Price" AS "Close Buy Avg. Price",
+            Closes."BTC Amount" AS "Close Buy Amount",
+            Closes.NewDescription AS "Close New Description",
+            Closes."BTC Price" AS "Close Buy Price",
+            Closes."STC Quantity" AS "Close Sell Quantity",
+            Closes."STC Avg. Price" AS "Close Sell Avg. Price",
+            Closes."STC Amount" AS "Close Sell Amount",
+            Closes."STC Price" AS "Close Sell Price",
+            (Opens."BTO Amount" + Opens."STO Amount") AS "Entry Credit",
+            (Opens."BTO Amount" + Opens."STO Amount") + (Closes."BTC Amount" + Closes."STC Amount") AS "Return",
+            CASE 
+                WHEN (Opens."BTO Amount" + Opens."STO Amount") + (Closes."BTC Amount" + Closes."STC Amount") > 0 THEN 'Win'
+                ELSE 'Loss'
+            END AS "Win/Loss"                   
+        FROM
+            MatchedTableOpens Opens
+        LEFT JOIN
+            MatchedTableCloses Closes ON Opens.NewDescription = Closes.NewDescription
+    ''')
+    cursor.execute('SELECT * FROM CombinedTable')
+    rows = cursor.fetchall()
+    print("CombinedTable rows after creation:", rows)
     return rows
+
+
+
+
+    # cursor.execute('''
+    #     CREATE TABLE CombinedTable AS
+    #     SELECT
+    #         "Activity Date",
+    #         Instrument,
+    #         "Strike Date",
+    #         "BTO Description" AS "Buy Description",
+    #         "STO Description" AS "Sell Description",
+    #         "BTO Quantity" AS "Quantity",
+    #         ROUND(CAST(REPLACE(REPLACE("BTO Amount", '$', ''), ',', '') AS FLOAT) +
+    #             CAST(REPLACE(REPLACE("STO Amount", '$', ''), ',', '') AS FLOAT), 2) AS "Credit Received"
+    #     FROM 
+    #         MatchedTable
+    # ''')
+    # rows = cursor.fetchall()
+    # print("Final Select:", rows)
+    # return rows
