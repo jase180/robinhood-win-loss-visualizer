@@ -28,16 +28,48 @@ def format_amount(amount):
             ls.append(character)
     return ''.join(ls)
 
+
+#WORKING# OEXP will need to lok at 1 or 1S
+# def format_special_transcode_transcode(trans):
+#       if trans not in ['OASGN','OEXCS','OEXP']:
+#         return trans
+#     if trans == 'OASGN':
+#         print('special transcode', next_row)
+#         return next_row[8]
+#     if trans == 'OEXCS':
+#         print('special transcode', next_row)
+#         return next_row[8]
+#     if trans == 'OEXP':
+#         return '$0.00'  
+
+def format_special_transcode_amount(trans,amount,next_row):
+    if trans not in ['OASGN','OEXCS','OEXP']:
+        return amount
+    if trans == 'OASGN':
+        print('special transcode', next_row)
+        return next_row[8]
+    if trans == 'OEXCS':
+        print('special transcode', next_row)
+        return next_row[8]
+    if trans == 'OEXP':
+        return '$0.00'
+
 def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQLite
     with open(filepath, 'r') as file:
         reader = csv.reader(file)
         header = next(reader)  # Skip header row
         print("CSV header:", header)
 
-        for row in reader:
+        rows = list(reader)
+
+        for i,row in enumerate(rows):
+            next_row = rows[i+1] if i + 1< len(rows) else row # next_row variable for special transcodes.  If else statement to handle edge case if last row
+
             row[0] = format_date(row[0])  # Format Activity Date
             row[1] = format_date(row[1])  # Format Process Date
             row[2] = format_date(row[2])  # Format Settle Date
+            row[8] = format_special_transcode_amount(row[5],row[8],next_row)
+            # print(row)
             row[8] = format_amount(row[8])  # Format Amount to take away comma and $ signs
 
             cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
@@ -66,22 +98,25 @@ def query_data(cursor):
         FROM 
             csv_data 
         WHERE 
-            "Trans Code" IN ('STC', 'BTC', 'BTO', 'STO') 
+            "Trans Code" IN ('STC', 'BTC', 'BTO', 'STO', 'OEXCS', 'OASGN', 'OEXP') 
             AND Description LIKE '%Put%'
-        GROUP BY
-            SUBSTR(Description, 0, INSTR(Description, ' Put')),
-            SUBSTR(Description, INSTR(Description, ' ') + 1, INSTR(Description, 'Put') - INSTR(Description, ' ') - 1),
-            CAST(SUBSTR(Description, INSTR(Description, '$') + 1) AS FLOAT),
-            "Activity Date",
-            "Process Date",
-            "Settle Date",
-            Instrument,
-            Description,
-            "Trans Code"
+        /* TEST NO GROUP BY */
+        --GROUP BY
+            -- SUBSTR(Description, 0, INSTR(Description, ' Put')),
+            -- SUBSTR(Description, INSTR(Description, ' ') + 1, INSTR(Description, 'Put') - INSTR(Description, ' ') - 1),
+            -- CAST(SUBSTR(Description, INSTR(Description, '$') + 1) AS FLOAT),
+            -- "Activity Date",
+            -- "Process Date",
+            -- "Settle Date",
+            -- Instrument,
+            -- Description,
+            -- "Trans Code"
     ''')
     cursor.execute('SELECT * FROM TempTable')
     rows = cursor.fetchall()
     print("TempTable rows after creation:", rows)
+    
+    # return rows
 
     print("CREATE PUTS MATCHED TABLE OPENS")  
     cursor.execute('''
@@ -150,8 +185,17 @@ def query_data(cursor):
     cursor.execute('SELECT * FROM MatchedTableCloses')
     rows = cursor.fetchall()
     print("MatchedTableCloses rows after creation:", rows)
+    
+        # Create a OEXCS OASGN table then Union into the puts close table
+    # Hint, use UNION ALL
 
     # Create CombinedTable to match MatchedTableOpens and MatchedTableCloses based on Description
+
+    #ORRRRR
+
+    #Replace all OASGN and OEXCS with BTC and STC so it'll capture correctly
+
+    
     print("CREATE COMBINED TABLE")  
     cursor.execute('''
         CREATE TABLE CombinedTable AS
@@ -193,23 +237,3 @@ def query_data(cursor):
     print("CombinedTable rows after creation:", rows)
     return rows
 
-
-
-
-    # cursor.execute('''
-    #     CREATE TABLE CombinedTable AS
-    #     SELECT
-    #         "Activity Date",
-    #         Instrument,
-    #         "Strike Date",
-    #         "BTO Description" AS "Buy Description",
-    #         "STO Description" AS "Sell Description",
-    #         "BTO Quantity" AS "Quantity",
-    #         ROUND(CAST(REPLACE(REPLACE("BTO Amount", '$', ''), ',', '') AS FLOAT) +
-    #             CAST(REPLACE(REPLACE("STO Amount", '$', ''), ',', '') AS FLOAT), 2) AS "Credit Received"
-    #     FROM 
-    #         MatchedTable
-    # ''')
-    # rows = cursor.fetchall()
-    # print("Final Select:", rows)
-    # return rows
