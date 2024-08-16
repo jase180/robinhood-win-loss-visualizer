@@ -1,6 +1,7 @@
 import sqlite3
 import csv
 from datetime import datetime
+import pandas as pd
 
 def create_table(cursor):
     print("Executing create table statement...")  
@@ -29,30 +30,52 @@ def format_amount(amount):
     return ''.join(ls)
 
 
-#WORKING# OEXP will need to lok at 1 or 1S
-# def format_special_transcode_transcode(trans):
-#       if trans not in ['OASGN','OEXCS','OEXP']:
-#         return trans
-#     if trans == 'OASGN':
-#         print('special transcode', next_row)
-#         return next_row[8]
-#     if trans == 'OEXCS':
-#         print('special transcode', next_row)
-#         return next_row[8]
-#     if trans == 'OEXP':
-#         return '$0.00'  
+def format_special_transcode_transcode(trans,quantity):
+    if trans not in ['OASGN','OEXCS','OEXP']:
+        return trans
+    if trans == 'OASGN':
+        return 'BTC'
+    if trans == 'OEXCS':
+        return 'STC'
+    if trans == 'OEXP': #needs to check quantity since both buy and sell has transcode OEXP
+        if quantity == '1':
+            return 'BTC'
+        if quantity == '1S':
+            return 'STC'
 
 def format_special_transcode_amount(trans,amount,next_row):
     if trans not in ['OASGN','OEXCS','OEXP']:
         return amount
     if trans == 'OASGN':
-        print('special transcode', next_row)
         return next_row[8]
     if trans == 'OEXCS':
         print('special transcode', next_row)
         return next_row[8]
     if trans == 'OEXP':
         return '$0.00'
+    
+def format_special_transcode_description(description):
+    if 'Option Expiration' in description:
+        ls = description.split()
+        print(description)
+        print(ls)
+        print(' '.join(ls[3:]))
+        return ' '.join(ls[3:])
+    else:
+        return description
+
+def format_rows(row,next_row):
+    row[0] = format_date(row[0])  # Format Activity Date
+    row[1] = format_date(row[1])  # Format Process Date
+    row[2] = format_date(row[2])  # Format Settle Date
+    row[4] = format_special_transcode_description(row[4])
+    row[8] = format_special_transcode_amount(row[5],row[8],next_row)
+    # print(row)
+    row[8] = format_amount(row[8])  # Format Amount to take away comma and $ signs
+    row[5] = format_special_transcode_transcode(row[5],row[6]) # Change special transcodes to BTC and STC; after row[8] bc format_special_transcode_amount needs the special transcode before formatting 
+
+
+    return row
 
 def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQLite
     with open(filepath, 'r') as file:
@@ -65,12 +88,7 @@ def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQ
         for i,row in enumerate(rows):
             next_row = rows[i+1] if i + 1< len(rows) else row # next_row variable for special transcodes.  If else statement to handle edge case if last row
 
-            row[0] = format_date(row[0])  # Format Activity Date
-            row[1] = format_date(row[1])  # Format Process Date
-            row[2] = format_date(row[2])  # Format Settle Date
-            row[8] = format_special_transcode_amount(row[5],row[8],next_row)
-            # print(row)
-            row[8] = format_amount(row[8])  # Format Amount to take away comma and $ signs
+            row = format_rows(row,next_row)
 
             cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
 
@@ -114,7 +132,22 @@ def query_data(cursor):
     ''')
     cursor.execute('SELECT * FROM TempTable')
     rows = cursor.fetchall()
-    print("TempTable rows after creation:", rows)
+    print("TempTable rows after creation:")
+
+    # Display all rows and columns
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+
+    # Adjust the display width to accommodate more columns
+    pd.set_option('display.width', None)
+
+    # Set the maximum column width to a larger value
+    pd.set_option('display.max_colwidth', None)
+
+    print('visualizing data with pandas')
+    df = pd.DataFrame(rows)
+
+    print(df)
     
     # return rows
 
@@ -150,7 +183,8 @@ def query_data(cursor):
     ''')
     cursor.execute('SELECT * FROM MatchedTableOpens')
     rows = cursor.fetchall()
-    print("MatchedTableOpens rows after creation:", rows)
+    df = pd.DataFrame(rows)
+    print("MatchedTableOpens rows after creation:", df)
 
     # Create MatchedTableCloses to identify matched BTC and STC transactions
     print("CREATE PUTS MATCHED TABLE CLOSES")  
@@ -184,7 +218,10 @@ def query_data(cursor):
     ''')
     cursor.execute('SELECT * FROM MatchedTableCloses')
     rows = cursor.fetchall()
-    print("MatchedTableCloses rows after creation:", rows)
+    print("MatchedTableCloses rows after creation:")
+
+    df = pd.DataFrame(rows)
+    print("MatchedTableOpens rows after creation:", df)
     
         # Create a OEXCS OASGN table then Union into the puts close table
     # Hint, use UNION ALL
@@ -234,6 +271,8 @@ def query_data(cursor):
     ''')
     cursor.execute('SELECT * FROM CombinedTable')
     rows = cursor.fetchall()
-    print("CombinedTable rows after creation:", rows)
+    print("CombinedTable rows after creation:")
+    df = pd.DataFrame(rows)
+    print("MatchedTableOpens rows after creation:", df)
     return rows
 
