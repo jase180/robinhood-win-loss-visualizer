@@ -68,9 +68,8 @@ def format_rows(row,next_row):
     row[0] = format_date(row[0])  # Format Activity Date
     row[1] = format_date(row[1])  # Format Process Date
     row[2] = format_date(row[2])  # Format Settle Date
-    row[4] = format_special_transcode_description(row[4])
-    row[8] = format_special_transcode_amount(row[5],row[8],next_row)
-    # print(row)
+    row[4] = format_special_transcode_description(row[4]) #Format description if special transcode
+    row[8] = format_special_transcode_amount(row[5],row[8],next_row) #Format description if special transcode
     row[8] = format_amount(row[8])  # Format Amount to take away comma and $ signs
     row[5] = format_special_transcode_transcode(row[5],row[6]) # Change special transcodes to BTC and STC; after row[8] bc format_special_transcode_amount needs the special transcode before formatting 
 
@@ -107,7 +106,7 @@ def query_data(cursor):
             Instrument,
             Description,
             "Trans Code",
-            Quantity,
+            SUM(Quantity) AS Quantity,
             Price,
             Amount, 
             SUBSTR(Description, 0, INSTR(Description, ' Put')) AS NewDescription,
@@ -118,17 +117,18 @@ def query_data(cursor):
         WHERE 
             "Trans Code" IN ('STC', 'BTC', 'BTO', 'STO', 'OEXCS', 'OASGN', 'OEXP') 
             AND Description LIKE '%Put%'
-        /* TEST NO GROUP BY */
-        --GROUP BY
-            -- SUBSTR(Description, 0, INSTR(Description, ' Put')),
-            -- SUBSTR(Description, INSTR(Description, ' ') + 1, INSTR(Description, 'Put') - INSTR(Description, ' ') - 1),
-            -- CAST(SUBSTR(Description, INSTR(Description, '$') + 1) AS FLOAT),
-            -- "Activity Date",
-            -- "Process Date",
-            -- "Settle Date",
-            -- Instrument,
-            -- Description,
-            -- "Trans Code"
+        GROUP BY
+             "Activity Date",
+             "Process Date",
+             "Settle Date",
+             Instrument,
+             Description,
+             "Trans Code",
+             Price,
+             Amount, 
+             SUBSTR(Description, 0, INSTR(Description, ' Put')),
+             SUBSTR(Description, INSTR(Description, ' ') + 1, INSTR(Description, 'Put') - INSTR(Description, ' ') - 1),
+             CAST(SUBSTR(Description, INSTR(Description, '$') + 1) AS FLOAT)
     ''')
     cursor.execute('SELECT * FROM TempTable')
     rows = cursor.fetchall()
@@ -184,7 +184,9 @@ def query_data(cursor):
     cursor.execute('SELECT * FROM MatchedTableOpens')
     rows = cursor.fetchall()
     df = pd.DataFrame(rows)
-    print("MatchedTableOpens rows after creation:", df)
+    print("MatchedTableOpens rows after creation:")
+    print(df)
+
 
     # Create MatchedTableCloses to identify matched BTC and STC transactions
     print("CREATE PUTS MATCHED TABLE CLOSES")  
@@ -221,7 +223,9 @@ def query_data(cursor):
     print("MatchedTableCloses rows after creation:")
 
     df = pd.DataFrame(rows)
-    print("MatchedTableOpens rows after creation:", df)
+    print("MatchedTableOpens rows after creation:")
+    print(df)
+
     
         # Create a OEXCS OASGN table then Union into the puts close table
     # Hint, use UNION ALL
