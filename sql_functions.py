@@ -268,7 +268,11 @@ def query_data(cursor):
         FROM
             MatchedTableOpens Opens
         LEFT JOIN
-            MatchedTableCloses Closes ON Opens.NewDescription = Closes.NewDescription
+            MatchedTableCloses Closes 
+        ON 
+            Opens.NewDescription = Closes.NewDescription 
+        AND
+            Opens."BTO Quantity" = Closes."BTC Quantity"
     ''')
     cursor.execute('SELECT * FROM CombinedTable')
     rows = cursor.fetchall()
