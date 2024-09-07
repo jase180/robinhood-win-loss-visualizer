@@ -107,8 +107,8 @@ def query_data(cursor):
             Description,
             "Trans Code",
             SUM(Quantity) AS Quantity,
-            Price,
-            Amount, 
+            AVG(Price) AS Price,
+            SUM(Amount) AS Amount,
             SUBSTR(Description, 0, INSTR(Description, ' Put')) AS NewDescription,
             SUBSTR(Description, INSTR(Description, ' ') + 1, INSTR(Description, 'Put') - INSTR(Description, ' ') - 1) AS StrikeDate,
             CAST(SUBSTR(Description, INSTR(Description, '$') + 1) AS FLOAT) AS StrikePrice
@@ -124,8 +124,6 @@ def query_data(cursor):
              Instrument,
              Description,
              "Trans Code",
-             Price,
-             Amount, 
              SUBSTR(Description, 0, INSTR(Description, ' Put')),
              SUBSTR(Description, INSTR(Description, ' ') + 1, INSTR(Description, 'Put') - INSTR(Description, ' ') - 1),
              CAST(SUBSTR(Description, INSTR(Description, '$') + 1) AS FLOAT)
@@ -223,7 +221,6 @@ def query_data(cursor):
     print("MatchedTableCloses rows after creation:")
 
     df = pd.DataFrame(rows)
-    print("MatchedTableOpens rows after creation:")
     print(df)
 
     
@@ -277,6 +274,12 @@ def query_data(cursor):
     rows = cursor.fetchall()
     print("CombinedTable rows after creation:")
     df = pd.DataFrame(rows)
-    print("MatchedTableOpens rows after creation:", df)
+    print(df)
+    sum_earnings = df.iloc[:, 22].sum()
+    WL_count = df.iloc[:, 23].value_counts()
+
+
+    print(sum_earnings, WL_count)
+    
     return rows
 

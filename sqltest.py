@@ -21,8 +21,8 @@ def grab_clean_data(filepath):
 
     connection.close()
 
-    print("Data fetched from DB)")  
-    print(data)
+    # print("Data fetched from DB)")  
+    # print(data)
     return data
 
 
@@ -42,4 +42,3 @@ pd.set_option('display.max_colwidth', None)
 print('visualizing data with pandas')
 df = pd.DataFrame(data)
 
-print(df)
