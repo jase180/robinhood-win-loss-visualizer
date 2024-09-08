@@ -241,22 +241,18 @@ def query_data(cursor):
             Opens."Activity Date" AS "Open Activity Date",
             Opens.Instrument AS "Open Instrument",
             Opens."BTO Quantity" AS "Open Buy Quantity",
-            Opens."BTO Avg. Price" AS "Open Buy Avg. Price",
             Opens."BTO Amount" AS "Open Buy Amount",
             Opens.NewDescription AS "Open New Description",
             Opens."BTO Price" AS "Open Buy Price",
             Opens."STO Quantity" AS "Open Sell Quantity",
-            Opens."STO Avg. Price" AS "Open Sell Avg. Price",
             Opens."STO Amount" AS "Open Sell Amount",
             Opens."STO Price" AS "Open Sell Price",
             Closes."Activity Date" AS "Close Activity Date",
             Closes."BTC Quantity" AS "Close Buy Quantity",
-            Closes."BTC Avg. Price" AS "Close Buy Avg. Price",
             Closes."BTC Amount" AS "Close Buy Amount",
             Closes.NewDescription AS "Close New Description",
             Closes."BTC Price" AS "Close Buy Price",
             Closes."STC Quantity" AS "Close Sell Quantity",
-            Closes."STC Avg. Price" AS "Close Sell Avg. Price",
             Closes."STC Amount" AS "Close Sell Amount",
             Closes."STC Price" AS "Close Sell Price",
             (Opens."BTO Amount" + Opens."STO Amount") AS "Entry Credit",
@@ -279,8 +275,8 @@ def query_data(cursor):
     print("CombinedTable rows after creation:")
     df = pd.DataFrame(rows)
     print(df)
-    sum_earnings = df.iloc[:, 22].sum()
-    WL_count = df.iloc[:, 23].value_counts()
+    sum_earnings = df.iloc[:, 18].sum()
+    WL_count = df.iloc[:, 19].value_counts()
 
 
     print(sum_earnings, WL_count)
