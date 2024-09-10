@@ -1,5 +1,7 @@
 Decide columns to be displayed
-Investigate why there are 0.0 columns so many places
+
+
+WIN/LOSS, OPEN DATE, SYBMBOL, 
 
 Make rows conditional formatting Green for W red for L
 

@@ -29,16 +29,3 @@ def grab_clean_data(filepath):
 data = grab_clean_data('data/robinhood_data.csv')
 print('data grab complete')
 
-# Display all rows and columns
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-
-# Adjust the display width to accommodate more columns
-pd.set_option('display.width', None)
-
-# Set the maximum column width to a larger value
-pd.set_option('display.max_colwidth', None)
-
-print('visualizing data with pandas')
-df = pd.DataFrame(data)
-

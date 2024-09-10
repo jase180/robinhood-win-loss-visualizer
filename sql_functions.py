@@ -237,46 +237,52 @@ def query_data(cursor):
     print("CREATE COMBINED TABLE")  
     cursor.execute('''
         CREATE TABLE CombinedTable AS
-        SELECT
-            Opens."Activity Date" AS "Open Activity Date",
-            Opens.Instrument AS "Open Instrument",
-            Opens."BTO Quantity" AS "Open Buy Quantity",
-            Opens."BTO Amount" AS "Open Buy Amount",
-            Opens.NewDescription AS "Open New Description",
-            Opens."BTO Price" AS "Open Buy Price",
-            Opens."STO Quantity" AS "Open Sell Quantity",
-            Opens."STO Amount" AS "Open Sell Amount",
-            Opens."STO Price" AS "Open Sell Price",
-            Closes."Activity Date" AS "Close Activity Date",
-            Closes."BTC Quantity" AS "Close Buy Quantity",
-            Closes."BTC Amount" AS "Close Buy Amount",
-            Closes.NewDescription AS "Close New Description",
-            Closes."BTC Price" AS "Close Buy Price",
-            Closes."STC Quantity" AS "Close Sell Quantity",
-            Closes."STC Amount" AS "Close Sell Amount",
-            Closes."STC Price" AS "Close Sell Price",
-            (Opens."BTO Amount" + Opens."STO Amount") AS "Entry Credit",
-            (Opens."BTO Amount" + Opens."STO Amount") + (Closes."BTC Amount" + Closes."STC Amount") AS "Return",
-            CASE 
-                WHEN (Opens."BTO Amount" + Opens."STO Amount") + (Closes."BTC Amount" + Closes."STC Amount") > 0 THEN 'Win'
-                ELSE 'Loss'
-            END AS "Win/Loss"                   
-        FROM
-            MatchedTableOpens Opens
-        LEFT JOIN
-            MatchedTableCloses Closes 
-        ON 
-            Opens.NewDescription = Closes.NewDescription 
-        AND
-            Opens."BTO Quantity" = Closes."BTC Quantity"
+            SELECT
+                CASE 
+                    WHEN (Opens."BTO Amount" + Opens."STO Amount") + (Closes."BTC Amount" + Closes."STC Amount") > 0 THEN 'Win'
+                    ELSE 'Loss'
+                END AS "Win/Loss",
+                Opens."Activity Date" AS "Open Activity Date",
+                Closes."Activity Date" AS "Close Activity Date",
+                Opens.Instrument AS "Open Instrument",
+                round((Opens."BTO Amount" + Opens."STO Amount"),2) AS "Entry Credit",
+                round((Opens."BTO Amount" + Opens."STO Amount"),2) + (Closes."BTC Amount" + Closes."STC Amount") AS "Return",
+                   
+                --ABOVE IS MAIN AT A GLANCE INFO, BELOW IS DETAILS
+                
+                Opens."BTO Quantity" AS "Open Buy Quantity",
+                Opens."BTO Amount" AS "Open Buy Amount",
+                Opens.NewDescription AS "Open New Description",
+                Opens."BTO Price" AS "Open Buy Price",
+                Opens."STO Quantity" AS "Open Sell Quantity",
+                Opens."STO Amount" AS "Open Sell Amount",
+                Opens."STO Price" AS "Open Sell Price",
+
+                Closes."BTC Quantity" AS "Close Buy Quantity",
+                Closes."BTC Amount" AS "Close Buy Amount",
+                Closes.NewDescription AS "Close New Description",
+                Closes."BTC Price" AS "Close Buy Price",
+                Closes."STC Quantity" AS "Close Sell Quantity",
+                Closes."STC Amount" AS "Close Sell Amount",
+                Closes."STC Price" AS "Close Sell Price"
+            FROM
+                MatchedTableOpens Opens
+            LEFT JOIN
+                MatchedTableCloses Closes 
+            ON 
+                Opens.NewDescription = Closes.NewDescription 
+            AND
+                Opens."BTO Quantity" = Closes."BTC Quantity";
     ''')
     cursor.execute('SELECT * FROM CombinedTable')
     rows = cursor.fetchall()
     print("CombinedTable rows after creation:")
     df = pd.DataFrame(rows)
     print(df)
-    sum_earnings = df.iloc[:, 18].sum()
-    WL_count = df.iloc[:, 19].value_counts()
+
+    #change column number final table columns are changed
+    sum_earnings = df.iloc[:, 1].sum()
+    WL_count = df.iloc[:, 0].value_counts()
 
 
     print(sum_earnings, WL_count)
