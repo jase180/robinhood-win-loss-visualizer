@@ -5,27 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSV Data</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         .container {
-            width: 100vw; /* Full viewport width */
+            width: 100vw;
             margin: 0 auto;
             padding: 0;
         }
 
         .table-responsive {
-            width: 100%; /* Ensure responsive container takes full width */
-            overflow-x: auto; /* Allow horizontal scrolling when necessary */
+            width: 100%;
+            overflow-x: auto;
         }
 
         table {
-            width: 100%; /* Ensure table takes the full width of the container */
+            width: 100%;
             border-collapse: collapse;
         }
 
         th, td {
             padding: 10px;
             text-align: left;
-            white-space: nowrap; /* Prevent text from wrapping */
+            white-space: nowrap;
         }
 
         th {
@@ -36,6 +38,33 @@
 <body>
     <div class="container">
         <h1 class="mt-5 mb-4">Robinhood Credit Spreads data</h1>
+
+        <!-- Button to trigger modal -->
+        <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#csvModal">
+            Paste CSV Data
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="csvModal" tabindex="-1" aria-labelledby="csvModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="csvModalLabel">Paste CSV Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="csvInput" class="form-control" rows="10" placeholder="Paste CSV data here"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="submitCsv">Submit CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
                 <thead class="thead-dark">
@@ -67,23 +96,41 @@
                         <th>Close Sell Price</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for row in data %}
-                    <tr class="{% if row[5] >= 0 %}bg-success{% else %}bg-danger{% endif %}">
-                        {% for cell in row %}
-                            <td>
-                                {% if cell is number %}
-                                    {{ cell | round(2) }}
-                                {% else %}
-                                    {{ cell }}
-                                {% endif %}
-                            </td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
+                <tbody id="tableBody">
+                    <!-- Rows will be dynamically generated here -->
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        document.getElementById('submitCsv').addEventListener('click', function() {
+            const csvData = document.getElementById('csvInput').value;
+            const rows = csvData.split('\n');
+
+            let tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ''; // Clear previous table rows
+
+            rows.forEach(row => {
+                const cols = row.split(',');
+
+                if (cols.length > 1) {
+                    const tr = document.createElement('tr');
+
+                    // Dynamically create table cells and append to the row
+                    cols.forEach(col => {
+                        const td = document.createElement('td');
+                        td.textContent = col.trim();
+                        tr.appendChild(td);
+                    });
+
+                    tableBody.appendChild(tr);
+                }
+            });
+
+            // Close the modal after submitting
+            $('#csvModal').modal('hide');
+        });
+    </script>
 </body>
 </html>
