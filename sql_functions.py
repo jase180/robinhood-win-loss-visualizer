@@ -19,6 +19,18 @@ def create_table(cursor):
     )
 ''')
 
+def import_data_from_csv(cursor, csv_reader):
+    header = next(csv_reader)  # Skip header row
+    print("CSV header:", header)
+
+    rows = list(csv_reader)
+
+    for i, row in enumerate(rows):
+        next_row = rows[i+1] if i + 1 < len(rows) else row
+        row = format_rows(row, next_row)
+        cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
+
+
 def format_date(date_str):
     return datetime.strptime(date_str, '%m/%d/%Y').strftime('%Y-%m-%d')
 
@@ -281,8 +293,8 @@ def query_data(cursor):
     print(df)
 
     #change column number final table columns are changed
-    sum_earnings = df.iloc[:, 1].sum()
-    WL_count = df.iloc[:, 0].value_counts()
+    # sum_earnings = df.iloc[:, 1].sum()
+    # WL_count = df.iloc[:, 0].value_counts()
 
 
     print(sum_earnings, WL_count)

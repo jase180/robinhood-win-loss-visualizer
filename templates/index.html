@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSV Data</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         .container {
@@ -37,7 +37,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="mt-5 mb-4">Robinhood Credit Spreads data</h1>
+        <h1 class="mt-5 mb-4">Robinhood CSV Vertical Spreads P&L table maker</h1>
 
         <!-- Button to trigger modal -->
         <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#csvModal">
@@ -69,15 +69,12 @@
             <table class="table table-bordered table-striped">
                 <thead class="thead-dark">
                     <tr>
-                        <!-- Main Details -->
                         <th>Win/Loss</th>
                         <th>Open Activity Date</th>
                         <th>Close Activity Date</th>
                         <th>Instrument</th>
                         <th>Entry Credit</th>
                         <th>Return</th>
-                        
-                        <!-- Open Position Details -->
                         <th>Open Buy Quantity</th>
                         <th>Open Buy Amount</th>
                         <th>Open New Description</th>
@@ -85,8 +82,6 @@
                         <th>Open Sell Quantity</th>
                         <th>Open Sell Amount</th>
                         <th>Open Sell Price</th>
-                        
-                        <!-- Close Position Details -->
                         <th>Close Buy Quantity</th>
                         <th>Close Buy Amount</th>
                         <th>Close New Description</th>
@@ -105,32 +100,47 @@
 
     <script>
         document.getElementById('submitCsv').addEventListener('click', function() {
-            const csvData = document.getElementById('csvInput').value;
-            const rows = csvData.split('\n');
-
-            let tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = ''; // Clear previous table rows
-
-            rows.forEach(row => {
-                const cols = row.split(',');
-
-                if (cols.length > 1) {
-                    const tr = document.createElement('tr');
-
-                    // Dynamically create table cells and append to the row
-                    cols.forEach(col => {
-                        const td = document.createElement('td');
-                        td.textContent = col.trim();
-                        tr.appendChild(td);
+            const csvData = document.getElementById('csvInput').value.trim();
+    
+            if (!csvData) {
+                alert("Please paste valid CSV data");
+                return;
+            }
+    
+            fetch('/upload_csv', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ csv: csvData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    let tableBody = document.getElementById('tableBody');
+                    tableBody.innerHTML = '';
+    
+                    data.data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        row.forEach(col => {
+                            const td = document.createElement('td');
+                            td.textContent = col.trim();
+                            tr.appendChild(td);
+                        });
+                        tableBody.appendChild(tr);
                     });
-
-                    tableBody.appendChild(tr);
+    
+                    $('#csvModal').modal('hide');
+                } else {
+                    alert('Error uploading CSV: ' + data.message);
                 }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('Fetch error: ' + error.message);
             });
-
-            // Close the modal after submitting
-            $('#csvModal').modal('hide');
         });
     </script>
+    
 </body>
 </html>
