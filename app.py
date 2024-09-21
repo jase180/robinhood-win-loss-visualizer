@@ -30,16 +30,15 @@ def upload_csv():
     try:
         data = request.get_json()
         csv_data = data['csv']
-        # print(data)
-        print(csv_data)
 
         # Convert the CSV string into a list of rows
         csv_reader = csv.reader(io.StringIO(csv_data))
         
-        # Open the database connection and cursor
-        connection = sqlite3.connect(':memory')
+        # Open an in-memory database connection
+        connection = sqlite3.connect(':memory:')
         cursor = connection.cursor()
         
+        # Create the table
         create_table(cursor)
 
         # Import CSV data into the database
@@ -50,10 +49,11 @@ def upload_csv():
 
         connection.close()
 
-        # Return the queried data as JSON to update the table
+        # Return the processed data as JSON to update the table
         return jsonify({'status': 'success', 'data': processed_data}), 200
     
     except Exception as e:
+        print(f"Error: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 if __name__ == '__main__':

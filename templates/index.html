@@ -98,49 +98,44 @@
         </div>
     </div>
 
+    <!-- jQuery Snippet -->
     <script>
-        document.getElementById('submitCsv').addEventListener('click', function() {
-            const csvData = document.getElementById('csvInput').value.trim();
-    
-            if (!csvData) {
-                alert("Please paste valid CSV data");
-                return;
-            }
-    
-            fetch('/upload_csv', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ csv: csvData })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    let tableBody = document.getElementById('tableBody');
-                    tableBody.innerHTML = '';
-    
-                    data.data.forEach(row => {
-                        const tr = document.createElement('tr');
-                        row.forEach(col => {
-                            const td = document.createElement('td');
-                            td.textContent = col.trim();
-                            tr.appendChild(td);
-                        });
-                        tableBody.appendChild(tr);
-                    });
-    
-                    $('#csvModal').modal('hide');
-                } else {
-                    alert('Error uploading CSV: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                alert('Fetch error: ' + error.message);
+        $(document).ready(function() {
+            $('#submitCsv').click(function() {
+                const csvData = $('#csvInput').val();
+                
+                $.ajax({
+                    url: '/upload_csv',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ csv: csvData }),
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            updateTable(response.data);
+                            $('#csvModal').modal('hide');
+                        } else {
+                            alert('Error processing CSV data: ' + response.message);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Error uploading CSV: ' + errorThrown);
+                    }
+                });
             });
+
+            function updateTable(data) {
+                const tableBody = $('#tableBody');
+                tableBody.empty();
+
+                data.forEach(function(row) {
+                    const tr = $('<tr>');
+                    row.forEach(function(cell) {
+                        tr.append($('<td>').text(cell));
+                    });
+                    tableBody.append(tr);
+                });
+            }
         });
     </script>
-    
 </body>
 </html>

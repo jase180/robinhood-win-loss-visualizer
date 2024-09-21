@@ -297,7 +297,7 @@ def query_data(cursor):
     # WL_count = df.iloc[:, 0].value_counts()
 
 
-    print(sum_earnings, WL_count)
+    # print(sum_earnings, WL_count)
     
     return rows
 
