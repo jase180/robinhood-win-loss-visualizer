@@ -260,7 +260,7 @@ def query_data(cursor):
                 Closes."Activity Date" AS "Close Activity Date",
                 Opens.Instrument AS "Open Instrument",
                 round((Opens."BTO Amount" + Opens."STO Amount"),2) AS "Entry Credit",
-                round((Opens."BTO Amount" + Opens."STO Amount"),2) + (Closes."BTC Amount" + Closes."STC Amount") AS "Return",
+                round((Opens."BTO Amount" + Opens."STO Amount") + (Closes."BTC Amount" + Closes."STC Amount"), 2) AS "Return",
                    
                 --ABOVE IS MAIN AT A GLANCE INFO, BELOW IS DETAILS
                 

@@ -24,15 +24,30 @@
             border-collapse: collapse;
         }
 
-        th, td {
+        th {
             padding: 10px;
-            text-align: left;
+            text-align: center;
+            white-space: normal;
+            background-color: #f2f2f2;
+            vertical-align: middle;
+            justify-content: center;
+            align-items: center;  
+        }
+
+        td {
+            padding: 10px;
+            text-align: center;
             white-space: nowrap;
         }
 
-        th {
-            background-color: #f2f2f2;
+        th:nth-child(7), th:nth-child(11), th:nth-child(13), th:nth-child(17) {
+            width: 80px; /* Set a narrower width for quantity-related columns */
         }
+
+        td:nth-child(7), td:nth-child(11), td:nth-child(13), td:nth-child(17) {
+            width: 80px; /* Same for table cells */
+        }
+
     </style>
 </head>
 <body>
