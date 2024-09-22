@@ -88,20 +88,22 @@ def format_rows(row,next_row):
 
     return row
 
-def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQLite
-    with open(filepath, 'r') as file:
-        reader = csv.reader(file)
-        header = next(reader)  # Skip header row
-        print("CSV header:", header)
+# TO BE REMOVED NOW REDUNDANT
 
-        rows = list(reader)
+# def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQLite
+#     with open(filepath, 'r') as file:
+#         reader = csv.reader(file)
+#         header = next(reader)  # Skip header row
+#         print("CSV header:", header)
 
-        for i,row in enumerate(rows):
-            next_row = rows[i+1] if i + 1< len(rows) else row # next_row variable for special transcodes.  If else statement to handle edge case if last row
+#         rows = list(reader)
 
-            row = format_rows(row,next_row)
+#         for i,row in enumerate(rows):
+#             next_row = rows[i+1] if i + 1< len(rows) else row # next_row variable for special transcodes.  If else statement to handle edge case if last row
 
-            cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
+#             row = format_rows(row,next_row)
+
+#             cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
 
 
 def query_data(cursor):

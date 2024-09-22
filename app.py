@@ -33,6 +33,7 @@ def upload_csv():
 
         # Convert the CSV string into a list of rows
         csv_reader = csv.reader(io.StringIO(csv_data))
+        csv_reader = iter(csv_reader)
         
         # Open an in-memory database connection
         connection = sqlite3.connect(':memory:')
