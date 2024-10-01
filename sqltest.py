@@ -1,7 +1,7 @@
 # for running SQLite query tests to make sure SQL is working
 
 import sqlite3
-from sql_functions import *
+from sql_functions_local import *
 import pandas as pd
 
 def grab_clean_data(filepath):

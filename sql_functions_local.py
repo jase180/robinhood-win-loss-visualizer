@@ -2,7 +2,6 @@ import sqlite3
 import csv
 from datetime import datetime
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
 
 def create_table(cursor):
@@ -20,18 +19,6 @@ def create_table(cursor):
         "Amount" TEXT
     )
 ''')
-
-def import_data_from_csv(cursor, csv_reader):
-    header = next(csv_reader)  # Skip header row
-    print("CSV header:", header)
-
-    rows = list(csv_reader)
-
-    for i, row in enumerate(rows):
-        next_row = rows[i+1] if i + 1 < len(rows) else row
-        row = format_rows(row, next_row)
-        cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
-
 
 def format_date(date_str):
     return datetime.strptime(date_str, '%m/%d/%Y').strftime('%Y-%m-%d')
@@ -87,29 +74,26 @@ def format_rows(row,next_row):
     row[8] = format_amount(row[8])  # Format Amount to take away comma and $ signs
     row[5] = format_special_transcode_transcode(row[5],row[6]) # Change special transcodes to BTC and STC; after row[8] bc format_special_transcode_amount needs the special transcode before formatting 
 
+
     return row
 
-# TO BE REMOVED NOW REDUNDANT
+def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQLite
+    with open(filepath, 'r') as file:
+        reader = csv.reader(file)
+        header = next(reader)  # Skip header row
+        print("CSV header:", header)
 
-# def import_data_from_csv(cursor, filepath): #also formats dates to acommodate SQLite
-#     with open(filepath, 'r') as file:
-#         reader = csv.reader(file)
-#         header = next(reader)  # Skip header row
-#         print("CSV header:", header)
+        rows = list(reader)
 
-#         rows = list(reader)
+        for i,row in enumerate(rows):
+            next_row = rows[i+1] if i + 1< len(rows) else row # next_row variable for special transcodes.  If else statement to handle edge case if last row
 
-#         for i,row in enumerate(rows):
-#             next_row = rows[i+1] if i + 1< len(rows) else row # next_row variable for special transcodes.  If else statement to handle edge case if last row
+            row = format_rows(row,next_row)
 
-#             row = format_rows(row,next_row)
-
-#             cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
+            cursor.execute('INSERT INTO csv_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', row[:9])
 
 
 def query_data(cursor):
-
-    #Dropping all tables from database if exist
     print("Dropping TempTable if exists...")  
     cursor.execute('DROP TABLE IF EXISTS TempTable')
 
@@ -122,7 +106,6 @@ def query_data(cursor):
     print("Dropping CombinedTable if exists...")  
     cursor.execute('DROP TABLE IF EXISTS CombinedTable')
 
-    #Start query
     print("Creating TempTable...")  
     cursor.execute('''
         CREATE TEMP TABLE TempTable AS
@@ -273,7 +256,7 @@ def query_data(cursor):
                 Closes."Activity Date" AS "Close Activity Date",
                 Opens.Instrument AS "Open Instrument",
                 round((Opens."BTO Amount" + Opens."STO Amount"),2) AS "Entry Credit",
-                round((Opens."BTO Amount" + Opens."STO Amount") + (Closes."BTC Amount" + Closes."STC Amount"), 2) AS "Return",
+                round((Opens."BTO Amount" + Opens."STO Amount"),2) + (Closes."BTC Amount" + Closes."STC Amount") AS "Return",
                    
                 --ABOVE IS MAIN AT A GLANCE INFO, BELOW IS DETAILS
                 
@@ -307,14 +290,11 @@ def query_data(cursor):
     df = pd.DataFrame(rows)
     print(df)
 
-    # plot_results(df)
-
     #change column number final table columns are changed
-    # sum_earnings = df.iloc[:, 1].sum()
-    # WL_count = df.iloc[:, 0].value_counts()
+    sum_earnings = df.iloc[:, 1].sum()
+    WL_count = df.iloc[:, 0].value_counts()
 
 
-    # print(sum_earnings, WL_count)
+    print(sum_earnings, WL_count)
     
     return rows
-
