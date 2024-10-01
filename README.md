@@ -16,17 +16,17 @@ This project is a web-based CSV data viewer designed to help visualize Robinhood
   Issues & Limitations
   Contributing
 
-##Introduction
+## Introduction
 This project provides a simple yet powerful way to view and analyze Robinhood credit spreads data through a web interface. It allows you to visualize both basic and detailed information about your trades, including entry and exit data, buy/sell quantities, and resulting returns.  
 
-##Features
+## Features
   Automatically filter out and combine credit spreads 
   Pair up spread opens and spread closes easily
   Sort and analyze trade outcomes (win/loss)
   Display detailed buy/sell activity for both open and close positions
   Bootstrap-styled UI for better visualization
 
-##Tech Stack
+## Tech Stack
   Frontend: HTML5, CSS3 (Bootstrap 4.5.2), JavaScript
   Backend: Flask
   Database: SQLite
