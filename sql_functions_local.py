@@ -286,8 +286,32 @@ def query_data(cursor):
     ''')
     cursor.execute('SELECT * FROM CombinedTable')
     rows = cursor.fetchall()
+
+    # final column names for final df
+    columns = [
+    "Win/Loss", 
+    "Open Activity Date", 
+    "Close Activity Date", 
+    "Open Instrument", 
+    "Entry Credit", 
+    "Return", 
+    "Open Buy Quantity", 
+    "Open Buy Amount", 
+    "Open New Description", 
+    "Open Buy Price", 
+    "Open Sell Quantity", 
+    "Open Sell Amount", 
+    "Open Sell Price", 
+    "Close Buy Quantity", 
+    "Close Buy Amount", 
+    "Close New Description", 
+    "Close Buy Price", 
+    "Close Sell Quantity", 
+    "Close Sell Amount", 
+    "Close Sell Price"
+]
     print("CombinedTable rows after creation:")
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(rows,columns = columns)
     print(df)
 
     #change column number final table columns are changed
