@@ -2,7 +2,31 @@ import sqlite3
 import csv
 from datetime import datetime
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
+
+def graph_data(df):
+    # Ensure your Activity Date columns are of datetime type
+    df['Close Activity Date'] = pd.to_datetime(df['Close Activity Date'])
+
+    # Create the Seaborn plot
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(x='Close Activity Date', y='Return', data=df)
+
+    # Set y-axis to start at 0
+    plt.ylim(None, None)
+
+    # Add labels and title
+    plt.xlabel('Close Activity Date')
+    plt.ylabel('Return')
+    plt.title('Return vs. Close Activity Date')
+
+    # Rotate x-axis labels for better readability
+    plt.xticks(rotation=45)
+
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
 
 def create_table(cursor):
     print("Executing create table statement...")  
@@ -313,6 +337,8 @@ def query_data(cursor):
     print("CombinedTable rows after creation:")
     df = pd.DataFrame(rows,columns = columns)
     print(df)
+
+    graph_data(df)
 
     #change column number final table columns are changed
     sum_earnings = df.iloc[:, 1].sum()

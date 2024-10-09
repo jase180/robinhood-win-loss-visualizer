@@ -4,6 +4,7 @@ import sqlite3
 from sql_functions_local import *
 import pandas as pd
 
+    
 def grab_clean_data(filepath):
     print("Connecting to database...")  
     connection = sqlite3.connect('database.db')
