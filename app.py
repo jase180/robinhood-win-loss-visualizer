@@ -50,8 +50,18 @@ def upload_csv():
         # Close the database connection
         connection.close()
 
+        columns = ['Win/Loss', 'Open Activity Date', 'Close Activity Date', 
+                   'Instrument', 'Entry Credit', 'Return', 
+                   'Open Buy Quantity', 'Open Buy Amount', 
+                   'Open New Description', 'Open Buy Price', 
+                   'Open Sell Quantity', 'Open Sell Amount', 
+                   'Open Sell Price', 'Close Buy Quantity', 
+                   'Close Buy Amount', 'Close New Description', 
+                   'Close Buy Price', 'Close Sell Quantity', 
+                   'Close Sell Amount', 'Close Sell Price']
+
         # Convert the processed data into a pandas DataFrame for plotting
-        df = pd.DataFrame(processed_data, columns=['Close Activity Date', 'Return'])
+        df = pd.DataFrame(processed_data, columns=columns)
 
         # Generate the Plotly graph from the DataFrame
         fig = graph_data_plotly(df)
@@ -61,6 +71,7 @@ def upload_csv():
 
         # Return both the processed data and the graph JSON
         return jsonify({'status': 'success', 'data': processed_data, 'graph': graph_json}), 200
+    
 
     except Exception as e:
         print(f"Error: {str(e)}")

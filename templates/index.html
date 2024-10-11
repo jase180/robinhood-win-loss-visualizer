@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly JS -->
     <style>
         .container {
             width: 100vw;
@@ -82,6 +83,10 @@
             </div>
         </div>
 
+        <!-- Div to display the Plotly graph -->
+        <h2 class="mt-5">Return vs Close Activity Date</h2>
+        <div id="plotlyGraph" style="width:100%;height:500px;"></div>
+
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
                 <thead class="thead-dark">
@@ -128,7 +133,11 @@
                     data: JSON.stringify({ csv: csvData }),
                     success: function(response) {
                         if (response.status === 'success') {
+                            // Update the table with processed data
                             updateTable(response.data);
+                            // Render the Plotly graph
+                            renderPlotlyGraph(response.graph);
+                            // Hide the modal after success
                             $('#csvModal').modal('hide');
                         } else {
                             alert('Error processing CSV data: ' + response.message);
@@ -151,6 +160,11 @@
                     });
                     tableBody.append(tr);
                 });
+            }
+
+            function renderPlotlyGraph(graphJson) {
+                const graphData = JSON.parse(graphJson);
+                Plotly.newPlot('plotlyGraph', graphData.data, graphData.layout);
             }
         });
     </script>
