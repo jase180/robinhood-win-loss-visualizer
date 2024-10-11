@@ -4,8 +4,11 @@ from datetime import datetime
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objs as go
 
-def graph_data(df):
+#matplot + seaborn
+def graph_data_matplot(df):
     # Ensure your Activity Date columns are of datetime type
     df['Close Activity Date'] = pd.to_datetime(df['Close Activity Date'])
 
@@ -27,6 +30,36 @@ def graph_data(df):
     # Show the plot
     plt.tight_layout()
     plt.show()
+
+def graph_data_plotly(df):
+    # Ensure your Activity Date columns are of datetime type
+    df['Close Activity Date'] = pd.to_datetime(df['Close Activity Date'])    
+    # Create the Plotly figure
+    fig = go.Figure()
+
+    # Add a line plot
+    fig.add_trace(go.Scatter(
+        x=df['Close Activity Date'], 
+        y=df['Return'], 
+        mode='lines',
+        name='Return'
+    ))
+
+    # Update layout for axis labels, title, and better readability
+    fig.update_layout(
+        title='Return vs. Close Activity Date',
+        xaxis_title='Close Activity Date',
+        yaxis_title='Return',
+        xaxis=dict(tickformat='%Y-%m-%d'),
+        xaxis_tickangle=-45,
+        margin=dict(l=40, r=40, t=40, b=40),
+        height=600,
+        width=900
+    )
+
+    # Show the plot
+    fig.show()
+
 
 def create_table(cursor):
     print("Executing create table statement...")  
@@ -338,7 +371,7 @@ def query_data(cursor):
     df = pd.DataFrame(rows,columns = columns)
     print(df)
 
-    graph_data(df)
+    graph_data_plotly(df)
 
     #change column number final table columns are changed
     sum_earnings = df.iloc[:, 1].sum()
