@@ -4,6 +4,83 @@ from datetime import datetime
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objs as go
+
+#matplot + seaborn
+def graph_data_matplot(df):
+    # Ensure your Activity Date columns are of datetime type
+    df['Close Activity Date'] = pd.to_datetime(df['Close Activity Date'])
+
+    # Create the Seaborn plot
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(x='Close Activity Date', y='Return', data=df)
+
+    # Set y-axis to start at 0
+    plt.ylim(None, None)
+
+    # Add labels and title
+    plt.xlabel('Close Activity Date')
+    plt.ylabel('Return')
+    plt.title('Return vs. Close Activity Date')
+
+    # Rotate x-axis labels for better readability
+    plt.xticks(rotation=45)
+
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
+
+def graph_data_plotly_local(df):
+    # Ensure your Activity Date columns are of datetime type
+    df['Close Activity Date'] = pd.to_datetime(df['Close Activity Date'])    
+    # Create the Plotly figure
+    fig = go.Figure()
+
+    # Add a line plot
+    fig.add_trace(go.Scatter(
+        x=df['Close Activity Date'], 
+        y=df['Return'], 
+        mode='lines',
+        name='Return'
+    ))
+
+    # Update layout for axis labels, title, and better readability
+    fig.update_layout(
+        title='Return vs. Close Activity Date',
+        xaxis_title='Close Activity Date',
+        yaxis_title='Return',
+        xaxis=dict(tickformat='%Y-%m-%d'),
+        xaxis_tickangle=-45,
+        margin=dict(l=40, r=40, t=40, b=40),
+        height=600,
+        width=900
+    )
+
+    # Show the plot
+    fig.show()
+
+def graph_data_plotly(df):
+    # Create the Plotly figure
+    fig = px.line(df, x='Close Activity Date', y='Return',
+                  labels={'Close Activity Date': 'Close Activity Date', 'Return': 'Return'},
+                  title='Return vs. Close Activity Date')
+
+    # Update layout to set y-axis minimum to 0 and rotate x-axis labels
+    fig.update_layout(yaxis_range=[0, None], xaxis_tickangle=-45)
+    # Update layout for axis labels, title, and better readability
+    fig.update_layout(
+        title='Return vs. Close Activity Date',
+        xaxis_title='Close Activity Date',
+        yaxis_title='Return',
+        xaxis=dict(tickformat='%Y-%m-%d'),
+        xaxis_tickangle=-45,
+        margin=dict(l=40, r=40, t=40, b=40),
+        height=600,
+        width=900
+    )
+
+    return fig
 
 def create_table(cursor):
     print("Executing create table statement...")  

@@ -28,6 +28,7 @@ def index():
 @app.route('/upload_csv', methods=['POST'])
 def upload_csv():
     try:
+        # Get the CSV data from the request
         data = request.get_json()
         csv_data = data['csv']
 
@@ -35,24 +36,32 @@ def upload_csv():
         csv_reader = csv.reader(io.StringIO(csv_data))
         csv_reader = iter(csv_reader)
         
-        # Open an in-memory database connection
+        # Open an in-memory SQLite database connection
         connection = sqlite3.connect(':memory:')
         cursor = connection.cursor()
         
-        # Create the table
+        # Create the table and import CSV data (Assume these functions exist)
         create_table(cursor)
-
-        # Import CSV data into the database
         import_data_from_csv(cursor, csv_reader)
 
         # Query and process the data
         processed_data = query_data(cursor)
 
+        # Close the database connection
         connection.close()
 
-        # Return the processed data as JSON to update the table
-        return jsonify({'status': 'success', 'data': processed_data}), 200
-    
+        # Convert the processed data into a pandas DataFrame for plotting
+        df = pd.DataFrame(processed_data, columns=['Close Activity Date', 'Return'])
+
+        # Generate the Plotly graph from the DataFrame
+        fig = graph_data_plotly(df)
+
+        # Convert the Plotly graph to JSON format
+        graph_json = fig.to_json()
+
+        # Return both the processed data and the graph JSON
+        return jsonify({'status': 'success', 'data': processed_data, 'graph': graph_json}), 200
+
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
