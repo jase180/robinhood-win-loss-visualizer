@@ -48,6 +48,20 @@
         td:nth-child(7), td:nth-child(11), td:nth-child(13), td:nth-child(17) {
             width: 80px; /* Same for table cells */
         }
+        
+        #plotlyGraph {
+            width: 100%;
+            height: 600px; /* Reduced height to prevent blocking */
+            margin-bottom: 50px; /* Increased space below the graph */
+        }
+
+        .table-responsive {
+            margin-top: 50px; /* Add extra space above the table */
+            width: 100%;
+            overflow-x: auto;
+        }
+
+
 
     </style>
 </head>
@@ -83,40 +97,47 @@
             </div>
         </div>
 
-        <!-- Div to display the Plotly graph -->
-        <h2 class="mt-5">Return vs Close Activity Date</h2>
-        <div id="plotlyGraph" style="width:100%;height:500px;"></div>
-
+        <div class="container">
+            <!-- Graph Section -->
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="mt-5">Return vs Close Activity Date</h2>
+                    <div id="plotlyGraph"></div>
+                </div>
+            </div>
+            <!-- Table Section -->
+        <div class="row">
+            <div class="col-12">    
         <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Win/Loss</th>
-                        <th>Open Activity Date</th>
-                        <th>Close Activity Date</th>
-                        <th>Instrument</th>
-                        <th>Entry Credit</th>
-                        <th>Return</th>
-                        <th>Open Buy Quantity</th>
-                        <th>Open Buy Amount</th>
-                        <th>Open New Description</th>
-                        <th>Open Buy Price</th>
-                        <th>Open Sell Quantity</th>
-                        <th>Open Sell Amount</th>
-                        <th>Open Sell Price</th>
-                        <th>Close Buy Quantity</th>
-                        <th>Close Buy Amount</th>
-                        <th>Close New Description</th>
-                        <th>Close Buy Price</th>
-                        <th>Close Sell Quantity</th>
-                        <th>Close Sell Amount</th>
-                        <th>Close Sell Price</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- Rows will be dynamically generated here -->
-                </tbody>
-            </table>
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Win/Loss</th>
+                            <th>Open Activity Date</th>
+                            <th>Close Activity Date</th>
+                            <th>Instrument</th>
+                            <th>Entry Credit</th>
+                            <th>Return</th>
+                            <th>Open Buy Quantity</th>
+                            <th>Open Buy Amount</th>
+                            <th>Open New Description</th>
+                            <th>Open Buy Price</th>
+                            <th>Open Sell Quantity</th>
+                            <th>Open Sell Amount</th>
+                            <th>Open Sell Price</th>
+                            <th>Close Buy Quantity</th>
+                            <th>Close Buy Amount</th>
+                            <th>Close New Description</th>
+                            <th>Close Buy Price</th>
+                            <th>Close Sell Quantity</th>
+                            <th>Close Sell Amount</th>
+                            <th>Close Sell Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Rows will be dynamically generated here -->
+                    </tbody>
+                </table>
         </div>
     </div>
 
