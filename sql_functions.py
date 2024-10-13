@@ -376,7 +376,8 @@ def query_data(cursor):
             ON 
                 Opens.NewDescription = Closes.NewDescription 
             AND
-                Opens."BTO Quantity" = Closes."BTC Quantity";
+                Opens."BTO Quantity" = Closes."BTC Quantity"
+            ORDER BY Closes."Activity Date" DESC;
     ''')
     cursor.execute('SELECT * FROM CombinedTable')
     rows = cursor.fetchall()
