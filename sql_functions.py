@@ -73,7 +73,10 @@ def graph_data_plotly(df):
         title='Return vs. Close Activity Date',
         xaxis_title='Close Activity Date',
         yaxis_title='Return',
-        xaxis=dict(tickformat='%Y-%m-%d'),
+        xaxis=dict(
+            tickformat='%Y-%m-%d',
+            tickmode='auto'
+        ),
         xaxis_tickangle=-45,
         margin=dict(l=40, r=40, t=40, b=40),
         height=600,
